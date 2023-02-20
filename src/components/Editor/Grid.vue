@@ -1,4 +1,5 @@
 <template>
+    <!-- 网格 -->
     <svg
         class="grid"
         width="100%"

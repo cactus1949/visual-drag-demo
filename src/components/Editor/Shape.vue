@@ -5,16 +5,15 @@
         @click="selectCurComponent"
         @mousedown="handleMouseDownOnShape"
     >
-        <span v-show="isActive()" class="iconfont icon-xiangyouxuanzhuan" @mousedown="handleRotate"></span>
         <span v-show="element.isLock" class="iconfont icon-suo"></span>
-        <div
+        <!-- <div
             v-for="item in (isActive()? getPointList() : [])"
             :key="item"
             class="shape-point"
             :style="getPointStyle(item)"
             @mousedown="handleMouseDownOnPoint(item, $event)"
         >
-        </div>
+        </div> -->
         <slot></slot>
     </div>
 </template>
@@ -101,50 +100,6 @@ export default {
 
         isActive() {
             return this.active && !this.element.isLock
-        },
-
-        // 处理旋转
-        handleRotate(e) {
-            this.$store.commit('setClickComponentStatus', true)
-            e.preventDefault()
-            e.stopPropagation()
-            // 初始坐标和初始角度
-            const pos = { ...this.defaultStyle }
-            const startY = e.clientY
-            const startX = e.clientX
-            const startRotate = pos.rotate
-
-            // 获取元素中心点位置
-            const rect = this.$el.getBoundingClientRect()
-            const centerX = rect.left + rect.width / 2
-            const centerY = rect.top + rect.height / 2
-
-            // 旋转前的角度
-            const rotateDegreeBefore = Math.atan2(startY - centerY, startX - centerX) / (Math.PI / 180)
-
-            // 如果元素没有移动，则不保存快照
-            let hasMove = false
-            const move = (moveEvent) => {
-                hasMove = true
-                const curX = moveEvent.clientX
-                const curY = moveEvent.clientY
-                // 旋转后的角度
-                const rotateDegreeAfter = Math.atan2(curY - centerY, curX - centerX) / (Math.PI / 180)
-                // 获取旋转的角度值
-                pos.rotate = startRotate + rotateDegreeAfter - rotateDegreeBefore
-                // 修改当前组件样式
-                this.$store.commit('setShapeStyle', pos)
-            }
-
-            const up = () => {
-                hasMove && this.$store.commit('recordSnapshot')
-                document.removeEventListener('mousemove', move)
-                document.removeEventListener('mouseup', up)
-                this.cursors = this.getCursor() // 根据旋转角度获取光标位置
-            }
-
-            document.addEventListener('mousemove', move)
-            document.addEventListener('mouseup', up)
         },
 
         getPointStyle(point) {
@@ -245,6 +200,8 @@ export default {
                 const curX = moveEvent.clientX
                 const curY = moveEvent.clientY
                 pos.top = curY - startY + startTop
+
+                
                 pos.left = curX - startX + startLeft
 
                 // 修改当前组件样式

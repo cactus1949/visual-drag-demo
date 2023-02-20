@@ -3,6 +3,7 @@ import store from '@/store'
 import { divide, multiply } from 'mathjs'
 
 const needToChangeAttrs = ['top', 'left', 'width', 'height', 'fontSize']
+// 缩放组件的大小
 export default function changeComponentsSizeWithScale(scale) {
     const componentData = deepCopy(store.state.componentData)
     componentData.forEach(component => {

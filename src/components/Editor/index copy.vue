@@ -1,17 +1,75 @@
 <template>
-    <div style="touch-action: none;">
+    <div
+        id="editor"
+        class="editor"
+        :class="{ edit: isEdit }"
+        :style="{
+            ...getCanvasStyle(canvasStyleData),
+            width: changeStyleWithScale(canvasStyleData.width) + 'px',
+            height: changeStyleWithScale(canvasStyleData.height) + 'px',
+        }"
+        @contextmenu="handleContextMenu"
+        @mousedown="handleMouseDown"
+    >
+        <!-- 网格线 -->
         <Grid />
-        <grid-item v-for="item in componentData"
-            :key="item.i"
-            :static="item.static"
-            :x="item.x"
-            :y="item.y"
-            :w="item.w"
-            :h="item.h"
-            :i="item.i"
+
+        <!--页面组件列表展示-->
+        <Shape
+            v-for="(item, index) in componentData"
+            :key="item.id"
+            :default-style="item.style"
+            :style="getShapeStyle(item.style)"
+            :active="item.id === (curComponent || {}).id"
+            :element="item"
+            :index="index"
+            :class="{ lock: item.isLock }"
         >
-            <span class="text">{{ item.i }}:{{ item.component }}</span>
-        </grid-item>
+            <component
+                :is="item.component"
+                v-if="item.component.startsWith('SVG')"
+                :id="'component' + item.id"
+                :style="getSVGStyle(item.style)"
+                class="component"
+                :prop-value="item.propValue"
+                :element="item"
+                :request="item.request"
+            />
+
+            <component
+                :is="item.component"
+                v-else-if="item.component != 'VText'"
+                :id="'component' + item.id"
+                class="component"
+                :style="getComponentStyle(item.style)"
+                :prop-value="item.propValue"
+                :element="item"
+                :request="item.request"
+            />
+
+            <component
+                :is="item.component"
+                v-else
+                :id="'component' + item.id"
+                class="component"
+                :style="getComponentStyle(item.style)"
+                :prop-value="item.propValue"
+                :element="item"
+                :request="item.request"
+                @input="handleInput"
+            />
+        </Shape>
+        <!-- 右击菜单 -->
+        <ContextMenu />
+        <!-- 标线 -->
+        <MarkLine />
+        <!-- 选中区域 -->
+        <Area
+            v-show="isShowArea"
+            :start="start"
+            :width="width"
+            :height="height"
+        />
     </div>
 </template>
 
@@ -27,18 +85,13 @@ import eventBus from '@/utils/eventBus'
 import Grid from './Grid'
 import { changeStyleWithScale } from '@/utils/translate'
 
-import { GridLayout, GridItem } from "vue-grid-layout"
-
 export default {
-    components: { Shape, ContextMenu, MarkLine, Area, Grid, GridItem },
+    components: { Shape, ContextMenu, MarkLine, Area, Grid },
     props: {
         isEdit: {
             type: Boolean,
             default: true,
         },
-        layout: {
-            type: Array
-        }
     },
     data() {
         return {
@@ -277,56 +330,5 @@ export default {
         width: 100%;
         height: 100%;
     }
-}
-
-
-.vue-grid-layout {
-    background: #eee;
-}
-.vue-grid-item:not(.vue-grid-placeholder) {
-    background: #ccc;
-    border: 1px solid black;
-}
-.vue-grid-item .resizing {
-    opacity: 0.9;
-}
-.vue-grid-item .static {
-    background: #cce;
-}
-.vue-grid-item .text {
-    font-size: 24px;
-    text-align: center;
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    margin: auto;
-    height: 100%;
-    width: 100%;
-}
-.vue-grid-item .no-drag {
-    height: 100%;
-    width: 100%;
-}
-.vue-grid-item .minMax {
-    font-size: 12px;
-}
-.vue-grid-item .add {
-    cursor: pointer;
-}
-.vue-draggable-handle {
-    position: absolute;
-    width: 20px;
-    height: 20px;
-    top: 0;
-    left: 0;
-    background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10'><circle cx='5' cy='5' r='5' fill='#999999'/></svg>") no-repeat;
-    background-position: bottom right;
-    padding: 0 8px 8px 0;
-    background-repeat: no-repeat;
-    background-origin: content-box;
-    box-sizing: border-box;
-    cursor: pointer;
 }
 </style>

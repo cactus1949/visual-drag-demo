@@ -17,7 +17,26 @@
                     @mousedown="handleMouseDown"
                     @mouseup="deselectCurComponent"
                 >
-                    <Editor />
+                    <grid-layout :layout.sync="componentData"
+                        :col-num="1"
+                        :row-height="30"
+                        :is-draggable="draggable"
+                        :is-resizable="resizable"
+                        :vertical-compact="true"
+                        :use-css-transforms="true"
+                    >
+                        <grid-item v-for="item in componentData"
+                                :static="item.static"
+                                :x="item.x"
+                                :y="item.y"
+                                :w="item.w"
+                                :h="item.h"
+                                :i="item.i"
+                                :key="item.i"
+                        >
+                            <span class="text">{{ item.i }}:{{ item.component }}</span>
+                        </grid-item>
+                    </grid-layout>
                 </div>
             </section>
             <!-- 右侧属性列表 -->
@@ -55,12 +74,26 @@ import CanvasAttr from '@/components/CanvasAttr'
 import { changeComponentSizeWithScale } from '@/utils/changeComponentsSizeWithScale'
 import { setDefaultcomponentData } from '@/store/snapshot'
 
+
+import { GridLayout, GridItem } from "vue-grid-layout"
+
 export default {
-    components: { Editor, ComponentList, AnimationList, EventList, Toolbar, RealTimeComponentList, CanvasAttr },
+    components: { Editor, ComponentList, AnimationList, EventList, Toolbar, RealTimeComponentList, CanvasAttr,
+        GridLayout,
+        GridItem 
+    },
     data() {
         return {
             activeName: 'attr',
             reSelectAnimateIndex: undefined,
+
+            layout: [
+                { x: 0, y: 0, w: 1, h: 2, i: "0" },
+            ],
+            draggable: true,
+            resizable: true,
+            colNum: 12,
+            index: 0,
         }
     },
     computed: mapState([
@@ -76,6 +109,25 @@ export default {
         listenGlobalKeyDown()
     },
     methods: {
+        // addItem: function () {
+        //     // Add a new item. It must have a unique key!
+        //     this.layout.push({
+        //         x: (this.layout.length * 2) % (this.colNum || 12),
+        //         y: this.layout.length + (this.colNum || 12), // puts it at the bottom
+        //         w: 2,
+        //         h: 2,
+        //         i: this.index,
+        //     });
+        //     // Increment the counter to ensure key is always unique.
+        //     this.index++;
+        // },
+        itemTitle(item) {
+            let result = item.i;
+            if (item.static) {
+                result += " - Static";
+            }
+            return result;
+        },
         restore() {
             // 用保存的数据恢复画布
             if (localStorage.getItem('canvasData')) {
@@ -89,19 +141,27 @@ export default {
         },
 
         handleDrop(e) {
+            console.log(e)
             e.preventDefault()
             e.stopPropagation()
 
             const index = e.dataTransfer.getData('index')
-            const rectInfo = this.editor.getBoundingClientRect()
+            // const rectInfo = this.editor.getBoundingClientRect()
             if (index) {
                 const component = deepCopy(componentList[index])
-                component.style.top = e.clientY - rectInfo.y
-                component.style.left = e.clientX - rectInfo.x
+                // component.style.top = e.clientY - rectInfo.y
+                // component.style.left = e.clientX - rectInfo.x
+
+                component.x = 0;
+                component.y = this.componentData.length * 2; // puts it at the bottom
+                component.i = this.componentData.length;
+
                 component.id = generateID()
 
+                console.log(component)
+
                 // 根据画面比例修改组件样式比例 https://github.com/woai3c/visual-drag-demo/issues/91
-                changeComponentSizeWithScale(component)
+                // changeComponentSizeWithScale(component)
 
                 this.$store.commit('addComponent', { component })
                 this.$store.commit('recordSnapshot')
@@ -193,5 +253,55 @@ export default {
     .global-attr {
         padding: 10px;
     }
+}
+
+.vue-grid-layout {
+    background: #eee;
+}
+.vue-grid-item:not(.vue-grid-placeholder) {
+    background: #ccc;
+    border: 1px solid black;
+}
+.vue-grid-item .resizing {
+    opacity: 0.9;
+}
+.vue-grid-item .static {
+    background: #cce;
+}
+.vue-grid-item .text {
+    font-size: 24px;
+    text-align: center;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: auto;
+    height: 100%;
+    width: 100%;
+}
+.vue-grid-item .no-drag {
+    height: 100%;
+    width: 100%;
+}
+.vue-grid-item .minMax {
+    font-size: 12px;
+}
+.vue-grid-item .add {
+    cursor: pointer;
+}
+.vue-draggable-handle {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    top: 0;
+    left: 0;
+    background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10'><circle cx='5' cy='5' r='5' fill='#999999'/></svg>") no-repeat;
+    background-position: bottom right;
+    padding: 0 8px 8px 0;
+    background-repeat: no-repeat;
+    background-origin: content-box;
+    box-sizing: border-box;
+    cursor: pointer;
 }
 </style>
