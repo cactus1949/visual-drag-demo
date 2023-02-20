@@ -18,7 +18,7 @@
                     @mouseup="deselectCurComponent"
                 >
                     <grid-layout :layout.sync="componentData"
-                        :col-num="1"
+                        :col-num="12"
                         :row-height="30"
                         :is-draggable="draggable"
                         :is-resizable="resizable"
@@ -34,7 +34,9 @@
                                 :i="item.i"
                                 :key="item.i"
                         >
-                            <span class="text">{{ item.i }}:{{ item.component }}</span>
+                            <div class="text">id:{{ item.i }}</div>
+                            <div class="text">type: {{ item.component }}</div>
+                            <span class="remove" @click="removeItem(item.i)">X</span>
                         </grid-item>
                     </grid-layout>
                 </div>
@@ -109,18 +111,10 @@ export default {
         listenGlobalKeyDown()
     },
     methods: {
-        // addItem: function () {
-        //     // Add a new item. It must have a unique key!
-        //     this.layout.push({
-        //         x: (this.layout.length * 2) % (this.colNum || 12),
-        //         y: this.layout.length + (this.colNum || 12), // puts it at the bottom
-        //         w: 2,
-        //         h: 2,
-        //         i: this.index,
-        //     });
-        //     // Increment the counter to ensure key is always unique.
-        //     this.index++;
-        // },
+        removeItem(val) {
+            const index = this.componentData.map(item => item.i).indexOf(val)
+            this.$store.commit('deleteComponent',index)
+        },
         itemTitle(item) {
             let result = item.i;
             if (item.static) {
@@ -154,7 +148,7 @@ export default {
 
                 component.x = 0;
                 component.y = this.componentData.length * 2; // puts it at the bottom
-                component.i = this.componentData.length;
+                component.i = generateID();
 
                 component.id = generateID()
 
@@ -224,6 +218,7 @@ export default {
             width: 288px;
             right: 0;
             top: 0;
+
             .el-select {
                 width: 100%;
             }
@@ -258,38 +253,47 @@ export default {
 .vue-grid-layout {
     background: #eee;
 }
+
 .vue-grid-item:not(.vue-grid-placeholder) {
     background: #ccc;
     border: 1px solid black;
 }
+
 .vue-grid-item .resizing {
-    opacity: 0.9;
+    opacity: .9;
 }
+
 .vue-grid-item .static {
     background: #cce;
 }
+
 .vue-grid-item .text {
     font-size: 24px;
     text-align: center;
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    margin: auto;
-    height: 100%;
-    width: 100%;
+
+    //     position: absolute;
+    //     top: 0;
+    //     bottom: 0;
+    //     left: 0;
+    //     right: 0;
+    //     margin: auto;
+    //     height: 100%;
+    //     width: 100%;
 }
+
 .vue-grid-item .no-drag {
     height: 100%;
     width: 100%;
 }
+
 .vue-grid-item .minMax {
     font-size: 12px;
 }
+
 .vue-grid-item .add {
     cursor: pointer;
 }
+
 .vue-draggable-handle {
     position: absolute;
     width: 20px;
@@ -302,6 +306,14 @@ export default {
     background-repeat: no-repeat;
     background-origin: content-box;
     box-sizing: border-box;
+    cursor: pointer;
+}
+
+.remove {
+    position: absolute;
+    right: 0;
+    top: 0;
+    padding: 5px;
     cursor: pointer;
 }
 </style>

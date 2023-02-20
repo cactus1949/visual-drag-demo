@@ -22,7 +22,7 @@ export const commonAttr = {
         ],
     },
 }
-const defaultData = {"w":1,"h":2, static: false};
+const defaultData = {"w":12,"h":2, static: false};
 
 // 编辑器左侧组件列表
 const list = [

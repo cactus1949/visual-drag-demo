@@ -279,20 +279,23 @@ export default {
     }
 }
 
-
 .vue-grid-layout {
     background: #eee;
 }
+
 .vue-grid-item:not(.vue-grid-placeholder) {
     background: #ccc;
     border: 1px solid black;
 }
+
 .vue-grid-item .resizing {
-    opacity: 0.9;
+    opacity: .9;
 }
+
 .vue-grid-item .static {
     background: #cce;
 }
+
 .vue-grid-item .text {
     font-size: 24px;
     text-align: center;
@@ -305,16 +308,20 @@ export default {
     height: 100%;
     width: 100%;
 }
+
 .vue-grid-item .no-drag {
     height: 100%;
     width: 100%;
 }
+
 .vue-grid-item .minMax {
     font-size: 12px;
 }
+
 .vue-grid-item .add {
     cursor: pointer;
 }
+
 .vue-draggable-handle {
     position: absolute;
     width: 20px;
