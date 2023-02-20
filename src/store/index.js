@@ -24,8 +24,8 @@ const data = {
 
         editMode: 'edit', // 编辑器模式 edit preview
         canvasStyleData: { // 页面全局数据
-            width: 1200,
-            height: 740,
+            width: 780,
+            height: 1114, // 默认一张a4大小 0.7:1
             scale: 100,
             color: '#000',
             opacity: 1,
