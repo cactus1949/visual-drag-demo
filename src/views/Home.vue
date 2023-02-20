@@ -47,12 +47,6 @@
                     <el-tab-pane label="属性" name="attr">
                         <component :is="curComponent.component + 'Attr'" />
                     </el-tab-pane>
-                    <el-tab-pane label="动画" name="animation" style="padding-top: 20px;">
-                        <AnimationList />
-                    </el-tab-pane>
-                    <el-tab-pane label="事件" name="events" style="padding-top: 20px;">
-                        <EventList />
-                    </el-tab-pane>
                 </el-tabs>
                 <CanvasAttr v-else></CanvasAttr>
             </section>
@@ -63,8 +57,6 @@
 <script>
 import Editor from '@/components/Editor/index'
 import ComponentList from '@/components/ComponentList' // 左侧列表组件
-import AnimationList from '@/components/AnimationList' // 右侧动画列表
-import EventList from '@/components/EventList' // 右侧事件列表
 import componentList from '@/custom-component/component-list' // 左侧列表数据
 import Toolbar from '@/components/Toolbar'
 import { deepCopy } from '@/utils/utils'
@@ -80,7 +72,7 @@ import { setDefaultcomponentData } from '@/store/snapshot'
 import { GridLayout, GridItem } from "vue-grid-layout"
 
 export default {
-    components: { Editor, ComponentList, AnimationList, EventList, Toolbar, RealTimeComponentList, CanvasAttr,
+    components: { Editor, ComponentList, Toolbar, RealTimeComponentList, CanvasAttr,
         GridLayout,
         GridItem 
     },

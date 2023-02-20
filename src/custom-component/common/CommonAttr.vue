@@ -17,19 +17,15 @@
                     </el-form-item>
                 </el-form>
             </el-collapse-item>
-            <Request v-if="curComponent.request"></Request>
-            <Linkage v-if="curComponent.linkage"></Linkage>
         </el-collapse>
     </div>
 </template>
 
 <script>
 import { styleData, textAlignOptions, borderStyleOptions, verticalAlignOptions, selectKey, optionMap } from '@/utils/attr'
-import Request from './Request'
-import Linkage from './Linkage'
 
 export default {
-    components: { Request, Linkage },
+    components: {  },
     data() {
         return {
             optionMap,
