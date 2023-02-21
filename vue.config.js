@@ -3,6 +3,11 @@ const CompressionPlugin = require('compression-webpack-plugin')
 const isProd = process.env.NODE_ENV === 'production'
 
 module.exports = {
+    devServer: {
+        port: 3000,
+        open: true,
+        // hot: true,//自动保存
+    },
     publicPath: isProd ? '/visual-drag-demo/' : './',
     configureWebpack: () => {
         if (isProd) {

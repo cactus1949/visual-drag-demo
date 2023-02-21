@@ -17,6 +17,7 @@
                     @mousedown="handleMouseDown"
                     @mouseup="deselectCurComponent"
                 >
+                    <!-- <Editor /> -->
                     <grid-layout :layout.sync="componentData"
                         :col-num="12"
                         :row-height="30"
@@ -39,6 +40,7 @@
                             <span class="remove" @click="removeItem(item.i)">X</span>
                         </grid-item>
                     </grid-layout>
+
                 </div>
             </section>
             <!-- 右侧属性列表 -->
@@ -147,7 +149,7 @@ export default {
                 console.log(component)
 
                 // 根据画面比例修改组件样式比例 https://github.com/woai3c/visual-drag-demo/issues/91
-                // changeComponentSizeWithScale(component)
+                changeComponentSizeWithScale(component)
 
                 this.$store.commit('addComponent', { component })
                 this.$store.commit('recordSnapshot')

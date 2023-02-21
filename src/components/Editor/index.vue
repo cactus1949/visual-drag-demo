@@ -1,17 +1,97 @@
 <template>
-    <div style="touch-action: none;">
+    <div
+        id="editor"
+        class="editor"
+        :class="{ edit: isEdit }"
+        :style="{
+            ...getCanvasStyle(canvasStyleData),
+            width: changeStyleWithScale(canvasStyleData.width) + 'px',
+            height: changeStyleWithScale(canvasStyleData.height) + 'px',
+        }"
+        @contextmenu="handleContextMenu"
+        @mousedown="handleMouseDown"
+    >
+        <!-- 网格线 -->
         <Grid />
-        <grid-item v-for="item in componentData"
-            :key="item.i"
-            :static="item.static"
-            :x="item.x"
-            :y="item.y"
-            :w="item.w"
-            :h="item.h"
-            :i="item.i"
+
+        <!--页面组件列表展示-->
+        <!-- <grid-layout :layout.sync="componentData"
+            :col-num="12"
+            :row-height="30"
+            :is-draggable="draggable"
+            :is-resizable="resizable"
+            :vertical-compact="true"
+            :use-css-transforms="true"
         >
-            <span class="text">{{ item.i }}:{{ item.component }}</span>
-        </grid-item>
+            <grid-item v-for="item in componentData"
+                    :static="item.static"
+                    :x="item.x"
+                    :y="item.y"
+                    :w="item.w"
+                    :h="item.h"
+                    :i="item.i"
+                    :key="item.i"
+            >
+                <div class="text">id:{{ item.i }}</div>
+                <div class="text">type: {{ item.component }}</div>
+                <span class="remove" @click="removeItem(item.i)">X</span>
+            </grid-item>
+        </grid-layout> -->
+        <!-- <Shape
+            v-for="(item, index) in componentData"
+            :key="item.id"
+            :default-style="item.style"
+            :style="getShapeStyle(item.style)"
+            :active="item.id === (curComponent || {}).id"
+            :element="item"
+            :index="index"
+            :class="{ lock: item.isLock }"
+        >
+            <component
+                :is="item.component"
+                v-if="item.component.startsWith('SVG')"
+                :id="'component' + item.id"
+                :style="getSVGStyle(item.style)"
+                class="component"
+                :prop-value="item.propValue"
+                :element="item"
+                :request="item.request"
+            />
+
+            <component
+                :is="item.component"
+                v-else-if="item.component != 'VText'"
+                :id="'component' + item.id"
+                class="component"
+                :style="getComponentStyle(item.style)"
+                :prop-value="item.propValue"
+                :element="item"
+                :request="item.request"
+            />
+
+            <component
+                :is="item.component"
+                v-else
+                :id="'component' + item.id"
+                class="component"
+                :style="getComponentStyle(item.style)"
+                :prop-value="item.propValue"
+                :element="item"
+                :request="item.request"
+                @input="handleInput"
+            />
+        </Shape> -->
+        <!-- 右击菜单 -->
+        <ContextMenu />
+        <!-- 标线 -->
+        <MarkLine />
+        <!-- 选中区域 -->
+        <Area
+            v-show="isShowArea"
+            :start="start"
+            :width="width"
+            :height="height"
+        />
     </div>
 </template>
 
@@ -29,19 +109,22 @@ import { changeStyleWithScale } from '@/utils/translate'
 
 import { GridLayout, GridItem } from "vue-grid-layout"
 
+
 export default {
-    components: { Shape, ContextMenu, MarkLine, Area, Grid, GridItem },
+    components: { Shape, ContextMenu, MarkLine, Area, Grid,GridLayout, GridItem},
     props: {
         isEdit: {
             type: Boolean,
             default: true,
         },
-        layout: {
-            type: Array
-        }
     },
     data() {
         return {
+            draggable: true,
+            resizable: true,
+            colNum: 12,
+            index: 0,
+
             editorX: 0,
             editorY: 0,
             start: { // 选中区域的起点
@@ -69,6 +152,60 @@ export default {
         })
     },
     methods: {
+        handleDrop(e) {
+            console.log(e)
+            e.preventDefault()
+            e.stopPropagation()
+
+            const index = e.dataTransfer.getData('index')
+            // const rectInfo = this.editor.getBoundingClientRect()
+            if (index) {
+                const component = deepCopy(componentList[index])
+                // component.style.top = e.clientY - rectInfo.y
+                // component.style.left = e.clientX - rectInfo.x
+
+                component.x = 0;
+                component.y = this.componentData.length * 2; // puts it at the bottom
+                component.i = generateID();
+
+                component.id = generateID()
+
+                console.log(component)
+
+                // 根据画面比例修改组件样式比例 https://github.com/woai3c/visual-drag-demo/issues/91
+                changeComponentSizeWithScale(component)
+
+                this.$store.commit('addComponent', { component })
+                this.$store.commit('recordSnapshot')
+            }
+        },
+
+        handleDragOver(e) {
+            e.preventDefault()
+            e.dataTransfer.dropEffect = 'copy'
+        },
+
+        handleMouseDown(e) {
+            e.stopPropagation()
+            this.$store.commit('setClickComponentStatus', false)
+            this.$store.commit('setInEditorStatus', true)
+        },
+
+        deselectCurComponent(e) {
+            if (!this.isClickComponent) {
+                this.$store.commit('setCurComponent', { component: null, index: null })
+            }
+
+            // 0 左击 1 滚轮 2 右击
+            if (e.button != 2) {
+                this.$store.commit('hideContextMenu')
+            }
+        },
+        
+        removeItem(val) {
+            const index = this.componentData.map(item => item.i).indexOf(val)
+            this.$store.commit('deleteComponent',index)
+        },
         getShapeStyle,
         getCanvasStyle,
         changeStyleWithScale,
@@ -277,63 +414,5 @@ export default {
         width: 100%;
         height: 100%;
     }
-}
-
-.vue-grid-layout {
-    background: #eee;
-}
-
-.vue-grid-item:not(.vue-grid-placeholder) {
-    background: #ccc;
-    border: 1px solid black;
-}
-
-.vue-grid-item .resizing {
-    opacity: .9;
-}
-
-.vue-grid-item .static {
-    background: #cce;
-}
-
-.vue-grid-item .text {
-    font-size: 24px;
-    text-align: center;
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    margin: auto;
-    height: 100%;
-    width: 100%;
-}
-
-.vue-grid-item .no-drag {
-    height: 100%;
-    width: 100%;
-}
-
-.vue-grid-item .minMax {
-    font-size: 12px;
-}
-
-.vue-grid-item .add {
-    cursor: pointer;
-}
-
-.vue-draggable-handle {
-    position: absolute;
-    width: 20px;
-    height: 20px;
-    top: 0;
-    left: 0;
-    background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10'><circle cx='5' cy='5' r='5' fill='#999999'/></svg>") no-repeat;
-    background-position: bottom right;
-    padding: 0 8px 8px 0;
-    background-repeat: no-repeat;
-    background-origin: content-box;
-    box-sizing: border-box;
-    cursor: pointer;
 }
 </style>
